@@ -3,30 +3,36 @@
 
   const tcore = new Client();
 
-  let name = "";
+  async function getName(): Promise<string> {
+    let name = "";
+    try {
+      await tcore.InitRest();
+      const res = await tcore.sendRequest({
+        hook: "name",
+        function: "read_name",
+        action: "null",
+        params: [],
+      });
 
-  async function getName() {
-    await tcore.InitRest();
+      const data = await res.json();
 
-    const res = await tcore.sendRequest({
-      hook: "name",
-      function: "read_name",
-      action: "null",
-      params: [],
-    });
+      name = data.data.msg;
+    } catch (e) {
+      throw e;
+    }
 
-    const data = await res.json();
-
-    name = data.data.msg;
+    return name;
   }
-
-  getName();
 </script>
 
 <main>
-  <h1>
-    Hello <span class="gradient">{name}</span>
-  </h1>
+  {#await getName()}
+    <p>TCore is loading...</p>
+  {:then name}
+    <h1>Hello <span class="gradient">{name}</span></h1>
+  {:catch}
+    <h2>Error connecting to TCore. Make sure TCore service is enabled</h2>
+  {/await}
 </main>
 
 <style>
